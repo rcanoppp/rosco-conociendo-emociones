@@ -1,0 +1,148 @@
+https://TUUSUARIO.github.io/rosco-emociones/
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rosco de Emociones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+    h1 { margin-top: 20px; color: #003366; }
+    .rosco {
+      position: relative;
+      width: 80vmin;
+      height: 80vmin;
+      margin: 20px auto;
+    }
+    .letra {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: blue;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .letra.activa { border: 3px solid yellow; transform: scale(1.2); }
+    .verde { background-color: green !important; }
+    .rojo { background-color: red !important; }
+    #pista {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border: 2px solid #003366;
+      border-radius: 10px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      min-height: 60px;
+      font-size: 1.2em;
+    }
+    #respuesta { padding: 10px; font-size: 1em; width: 200px; margin-top: 15px; }
+    .botones { margin-top: 15px; }
+    button {
+      padding: 10px 15px;
+      font-size: 1em;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #comprobar { background-color: #28a745; color: white; }
+    #pasapalabra { background-color: #ffc107; color: black; }
+    #jugar { background-color: #007bff; color: white; }
+    #temporizador { margin-top: 20px; font-size: 1.5em; font-weight: bold; color: #dc3545; }
+    @media (max-width: 600px) {
+      .rosco { width: 90vmin; height: 90vmin; }
+      .letra { width: 32px; height: 32px; font-size: 0.8em; }
+      #respuesta { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Rosco de Emociones</h1>
+  <div class="rosco" id="rosco"></div>
+  <div id="pista">Pulsa "Jugar" para comenzar</div>
+  <input type="text" id="respuesta" placeholder="Escribe tu respuesta aquí">
+  <div class="botones">
+    <button id="comprobar">Comprobar</button>
+    <button id="pasapalabra">Pasapalabra</button>
+    <button id="jugar">Jugar</button>
+  </div>
+  <div id="temporizador">20:00</div>
+
+  <script>
+    const palabras = {
+      A: ["Ansiedad", "Estado emocional caracterizado por inquietud y temor"],
+      B: ["Bienestar", "Sensación de comodidad y satisfacción"],
+      C: ["Confianza", "Sentimiento de seguridad hacia uno mismo o los demás"],
+      D: ["Desesperanza", "Sensación de no ver salida a los problemas"],
+      E: ["Empatía", "Capacidad de ponerse en el lugar del otro"],
+      F: ["Frustración", "Emoción al no lograr un objetivo"],
+      G: ["Gratitud", "Sentimiento de agradecimiento"],
+      H: ["Hostilidad", "Actitud de enfrentamiento hacia los demás"],
+      I: ["Ilusión", "Esperanza que provoca alegría"],
+      J: ["Juicio", "Opinión emocional sobre algo o alguien"],
+      K: ["Kilojulio", "Palabra inventada para la letra K"],
+      L: ["Libertad", "Sensación emocional de autonomía"],
+      M: ["Miedo", "Emoción ante un peligro real o imaginario"],
+      N: ["Nostalgia", "Tristeza por recuerdos del pasado"],
+      Ñ: ["Ñoñez", "Sensibilidad exagerada ante las emociones"],
+      O: ["Optimismo", "Tendencia a ver el lado positivo"],
+      P: ["Preocupación", "Inquietud por algo que importa"],
+      Q: ["Querencia", "Afecto hacia un lugar o persona"],
+      R: ["Rabia", "Ira intensa"],
+      S: ["Serenidad", "Estado de calma emocional"],
+      T: ["Tristeza", "Emoción ante la pérdida"],
+      U: ["Urgencia", "Sensación de que algo debe resolverse ya"],
+      V: ["Valentía", "Capacidad de afrontar miedos"],
+      W: ["Wellness", "Sensación de bienestar emocional"],
+      X: ["Xenofobia", "Rechazo emocional hacia lo extranjero"],
+      Y: ["Yugo", "Sensación de opresión emocional"],
+      Z: ["Zozobra", "Inquietud emocional intensa"]
+    };
+
+    const letras = Object.keys(palabras);
+    const rosco = document.getElementById("rosco");
+    const pista = document.getElementById("pista");
+    const respuestaInput = document.getElementById("respuesta");
+    const comprobarBtn = document.getElementById("comprobar");
+    const pasapalabraBtn = document.getElementById("pasapalabra");
+    const jugarBtn = document.getElementById("jugar");
+    const temporizador = document.getElementById("temporizador");
+
+    let indiceActual = 0;
+    let tiempo = 20 * 60;
+    let intervalo;
+
+    // Crear letras en formato circular
+    letras.forEach((letra, i) => {
+      const angulo = (i / letras.length) * 2 * Math.PI;
+      const x = 50 + 40 * Math.cos(angulo);
+      const y = 50 + 40 * Math.sin(angulo);
+      const btn = document.createElement("div");
+      btn.classList.add("letra");
+      btn.id = "letra-" + letra;
+      btn.innerText = letra;
+      btn.style.left = x + "%";
+      btn.style.top = y + "%";
+      rosco.appendChild(btn);
+    });
+
+    function actualizarPista() {
+      const letra = letras[indiceActual];
+      pista.innerText = palabras[letra][1];
+      document.querySelectorAll(".letra").forEach(l => l.classList.remove("activa"));
+      document.getElementById("letra-" + letra).classList.add("activa");
+    }
